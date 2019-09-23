@@ -34,7 +34,7 @@ int sum=0,totalbursttime=0,time=0;
 float avgwt,avgtat;
 
 
-pool.time=0;
+pool.time=-1;
 pool.processid=-1;
 
 
@@ -66,13 +66,10 @@ process[i].processid=i;
 process[i].finishtime=0;
 process[i].waitingtime=0;
 process[i].turnaroundtime=0;
+process[i].totalbursttime=BT[i];
 
 }
-for(i=0;i<n;i++)
-{
-printf("\nprocess %d  %d %d %d %d",process[i].processid,process[i].turnaroundtime,process[i].waitingtime,process[i].arrivaltime,process[i].bursttime);
 
-}
 
 
 
@@ -85,7 +82,7 @@ time=0;
 
 while(time<30)
 {
-printf("\n\n\ntime =%d\n",time);
+//printf("\n\n\ntime =%d\n",time);
 	for(i=0;i<n;i++)
 	{
 		if(process[i].bursttime>0)
@@ -108,7 +105,7 @@ printf("\n\n\ntime =%d\n",time);
 	{
 		if(process[i].arrivaltime==time)
 		{
-			printf("\n process %d added to queue entered at %d",i,time);
+		//	printf("\n process %d added to queue entered at %d",i,time);
 			q=queue_add_head(q,&process[i]);		
 			//printf("queue count is = %d ",q->count);		
 		}
@@ -117,10 +114,11 @@ printf("\n\n\ntime =%d\n",time);
 
 
 
-	printf("\npool time is %d",(time-pool.time)%tq);
+	//printf("\npool time is %d",(time-pool.time)%tq);
 	if((time-pool.time)%tq==0 && time!=0)
-	{	pool.time=0;
-		if(pool.processid!=-1){printf("\nprocess %d added to queue ",pool.processid);
+	{	pool.time=-1;
+		if(pool.processid!=-1){
+		//printf("\nprocess %d added to queue ",pool.processid);
 		q=queue_add_head(q,&process[pool.processid]);
 		}
 		pool.processid=-1;
@@ -129,7 +127,7 @@ printf("\n\n\ntime =%d\n",time);
 
 
 
-	if(pool.time==0 && q->count!=0){
+	if(pool.time==-1 && q->count!=0){
 		//printf("\n===================");
 		executingprocess=queue_top(q);
 	}else
@@ -142,14 +140,15 @@ printf("\n\n\ntime =%d\n",time);
 	{
 	//printf("\nexecuting  !NULL");
 	currentprocessid=executingprocess->processid;
-	printf("\ncurrent process id is %d",currentprocessid);
+	//printf("\ncurrent process id is %d",currentprocessid);
 	if(executingprocess->bursttime<=tq)
 	{
-		printf("\n     process %d finished execution",currentprocessid);
+		//printf("\n     process %d finished execution at %d",currentprocessid,time+process[currentprocessid].bursttime);
 		process[currentprocessid].finishtime=time+process[currentprocessid].bursttime;
-		process[currentprocessid].waitingtime=process[currentprocessid].finishtime-process[currentprocessid].bursttime-process[currentprocessid].arrivaltime;
+	process[currentprocessid].waitingtime=process[currentprocessid].finishtime-process[currentprocessid].totalbursttime-process[currentprocessid].arrivaltime;
 		process[currentprocessid].turnaroundtime=process[currentprocessid].finishtime-process[currentprocessid].arrivaltime;		
-		
+		pool.processid=-1;
+		pool.time=time+process[currentprocessid].bursttime;
 		process[currentprocessid].bursttime=0;
 		q=queue_remove(q);
 		
@@ -159,7 +158,7 @@ printf("\n\n\ntime =%d\n",time);
 	else if(executingprocess->bursttime>tq)
 	{
 		process[currentprocessid].bursttime-=tq;
-		printf("\nprocess %d decreased burst time to %d",currentprocessid,process[currentprocessid].bursttime);
+		//printf("\nprocess %d decreased burst time to %d",currentprocessid,process[currentprocessid].bursttime);
 		pool.processid=currentprocessid;
 		pool.time=time;
 		q=queue_remove(q);
@@ -184,58 +183,6 @@ printf("\ntotal burst time is %d",time);
 
 
 
-/*
-
-for(i=0;i<n;i++)
-totalbursttime+=BT[i];
-
-printf("total BT :%d",totalbursttime);
-while(time<totalbursttime)
-{
-for(i=0;i<n;i++)
-{
-//printf("\nprocess %d %d %d",i+1,time,BT[i]);
-	if(BT[i]>0)
-	{
-		
-		if(BT[i]<=timequantum)
-		{
-			FT[i]=time+BT[i];
-			time=time+BT[i];
-			BT[i]=0;
-		}
-		else
-		{
-			time=time+timequantum;
-			BT[i]=BT[i]-timequantum;
-		}
-
-
-
-	}
-
-}
-
-
-}
-
-
-
-*/
-
-
-
-
-for(i=0;i<n;i++)
-{
-WT[i]=FT[i]-tempBT[i]-AT[i];
-TAT[i]=FT[i]-AT[i];
-}
-
-
-
-printf("\n waiting time is \n");
-
 
 printf("\n================================================");
 printf("\nprocess	AT	BT	FT	WT	TAT");
@@ -250,14 +197,14 @@ printf("\n%d	%d	%d	%d	%d	%d\n",p[i],process[i].arrivaltime,tempBT[i],process[i].
 
 for(i=0;i<n;i++)
 {
-sum=sum+WT[i];
+sum=sum+process[i].waitingtime;
 }
 avgwt=sum/(float)n;
 
 sum=0;
 for(i=0;i<n;i++)
 {
-sum=sum+TAT[i];
+sum=sum+process[i].turnaroundtime;
 }
 avgtat=sum/(float)n;
 
