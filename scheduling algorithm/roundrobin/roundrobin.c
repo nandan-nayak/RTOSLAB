@@ -80,7 +80,7 @@ tempBT[i]=BT[i];
 time=0;
 
 
-while(time<30)
+while(1)
 {
 //printf("\n\n\ntime =%d\n",time);
 	for(i=0;i<n;i++)
